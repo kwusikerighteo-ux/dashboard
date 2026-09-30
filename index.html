@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3D6FE0">
+<title>Email Marketing Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root{
+    --bg-a:#E4EFFF; --bg-b:#CDE1FF;
+    --surface:#F3F9FF; --surface-2:#FFFFFF;
+    --ink:#152447; --ink-soft:#5C6C8F; --ink-faint:#93A5C7;
+    --blue:#3D6FE0; --blue-deep:#2A52B8;
+    --indigo:#6C63FF; --indigo-deep:#4E45D6;
+    --orange:#FF8A3D; --orange-deep:#DB6A1F;
+    --teal:#1FB6C9; --teal-deep:#128FA0;
+    --green:#22B573; --red:#EF5B5B;
+    --shadow-d: rgba(58, 92, 168, 0.30);
+    --shadow-l: rgba(255,255,255,0.85);
+    --radius-lg: 26px; --radius-md: 18px;
+    --font-display:'Fredoka',sans-serif;
+    --font-body:'Plus Jakarta Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--font-body);
+    color:var(--ink);
+    background:linear-gradient(160deg,var(--bg-a) 0%,var(--bg-b) 100%) fixed;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  button,input{font-family:inherit;}
+  button:focus-visible,.pill:focus-visible,input:focus-visible{outline:3px solid var(--blue-deep);outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important;}}
+
+  .clay{
+    background:linear-gradient(150deg,var(--surface-2) 0%,var(--surface) 100%);
+    border-radius:var(--radius-lg);
+    box-shadow:10px 10px 22px var(--shadow-d), -10px -10px 22px var(--shadow-l);
+  }
+
+  .app{display:flex;min-height:100vh;}
+
+  /* ---------- Sidebar (desktop) ---------- */
+  .sidebar{display:none;}
+  @media (min-width:900px){
+    .sidebar{
+      display:flex;flex-direction:column;gap:26px;
+      width:236px;flex-shrink:0;padding:30px 18px;
+      position:sticky;top:0;height:100vh;
+    }
+  }
+  .brand{display:flex;align-items:center;gap:11px;padding:0 6px;}
+  .brand-mark{
+    width:40px;height:40px;border-radius:13px;flex-shrink:0;
+    background:linear-gradient(150deg,var(--blue),var(--indigo-deep));
+    box-shadow:4px 4px 9px var(--shadow-d), -3px -3px 7px var(--shadow-l);
+    display:flex;align-items:center;justify-content:center;color:#fff;
+  }
+  .brand-text strong{display:block;font-family:var(--font-display);font-size:16px;font-weight:600;}
+  .brand-text span{font-size:11.5px;color:var(--ink-soft);}
+
+  .nav-list{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;
+    color:var(--ink-soft);font-weight:600;font-size:14.5px;
+    background:transparent;border:none;width:100%;text-align:left;cursor:pointer;
+  }
+  .nav-item svg{width:19px;height:19px;flex-shrink:0;}
+  .nav-item.active{
+    color:var(--blue-deep);
+    background:linear-gradient(150deg,var(--surface-2),var(--surface));
+    box-shadow:5px 5px 11px var(--shadow-d), -5px -5px 11px var(--shadow-l);
+  }
+
+  /* ---------- Bottom nav (mobile) ---------- */
+  .bottom-nav{
+    position:fixed;left:12px;right:12px;bottom:12px;z-index:50;
+    display:flex;justify-content:space-around;align-items:center;
+    padding:10px 10px calc(10px + env(safe-area-inset-bottom));
+    border-radius:22px;
+    background:linear-gradient(150deg,var(--surface-2),var(--surface));
+    box-shadow:0 10px 24px var(--shadow-d), 0 -2px 8px var(--shadow-l);
+  }
+  @media (min-width:900px){.bottom-nav{display:none;}}
+  .bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--ink-soft);background:none;border:none;padding:6px 26px;position:relative;}
+  .bn-item svg{width:20px;height:20px;}
+  .bn-item.active{color:var(--blue-deep);}
+
+  /* ---------- Main ---------- */
+  .main{flex:1;min-width:0;padding:22px 16px 118px;max-width:1180px;margin:0 auto;width:100%;}
+  @media (min-width:900px){.main{padding:38px 40px 44px;}}
+
+  .top-bar{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:18px;}
+  .sync-status{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-soft);white-space:nowrap;margin-right:auto;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2.2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,181,115,.45);}70%{box-shadow:0 0 0 7px rgba(34,181,115,0);}100%{box-shadow:0 0 0 0 rgba(34,181,115,0);}}
+  .refresh-btn{
+    flex-shrink:0;width:42px;height:42px;border:none;border-radius:14px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;color:var(--blue-deep);
+    background:linear-gradient(150deg,var(--surface-2),var(--surface));
+    box-shadow:5px 5px 10px var(--shadow-d), -5px -5px 10px var(--shadow-l);
+  }
+  .refresh-btn:active{box-shadow:inset 2px 2px 5px var(--shadow-d), inset -2px -2px 5px var(--shadow-l);}
+  .refresh-btn svg{width:19px;height:19px;}
+  .refresh-btn svg.spin{animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .refresh-btn[disabled]{opacity:.6;cursor:default;}
+
+  .view[hidden]{display:none;}
+  h1{font-family:var(--font-display);font-size:26px;font-weight:600;margin-bottom:4px;}
+  @media (min-width:640px){h1{font-size:30px;}}
+
+  .controls-row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .pill-group{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px;}
+  .pill-group::-webkit-scrollbar{display:none;}
+  .pill{
+    flex-shrink:0;border:none;cursor:pointer;font-weight:600;font-size:13px;
+    padding:9px 17px;border-radius:999px;color:var(--ink-soft);
+    background:linear-gradient(150deg,var(--surface-2),var(--surface));
+    box-shadow:5px 5px 10px var(--shadow-d), -5px -5px 10px var(--shadow-l);
+    transition:box-shadow .15s ease,color .15s ease;
+  }
+  .pill.active{
+    color:#fff;background:linear-gradient(150deg,var(--blue),var(--blue-deep));
+    box-shadow:inset 3px 3px 7px rgba(0,0,0,.22), inset -2px -2px 5px rgba(255,255,255,.18);
+  }
+
+  .gmail-connect-btn{
+    display:flex;align-items:center;gap:8px;border:none;cursor:pointer;
+    font-weight:700;font-size:12.5px;padding:9px 16px;border-radius:999px;
+    color:var(--blue-deep);margin-left:auto;flex-shrink:0;white-space:nowrap;
+    background:linear-gradient(150deg,var(--surface-2),var(--surface));
+    box-shadow:5px 5px 10px var(--shadow-d), -5px -5px 10px var(--shadow-l);
+  }
+  .gmail-connect-btn svg{width:16px;height:16px;flex-shrink:0;}
+  .gmail-connect-btn.connected{color:#1c8f5c;}
+  .gmail-connect-btn[disabled]{opacity:.55;cursor:not-allowed;}
+
+  .error-banner{
+    display:none;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 18px;margin-top:18px;border-radius:20px;
+    background:linear-gradient(150deg,#fff,#ffe4e1);
+    box-shadow:8px 8px 16px var(--shadow-d), -8px -8px 16px var(--shadow-l);
+    color:#8a2f2f;font-size:13px;font-weight:600;
+  }
+  .error-banner.show{display:flex;}
+  .retry-btn{border:none;cursor:pointer;padding:8px 15px;border-radius:999px;background:linear-gradient(150deg,var(--red),#c8433f);color:#fff;font-weight:700;font-size:12.5px;flex-shrink:0;}
+
+  /* ---------- KPI grid ---------- */
+  .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px;}
+  @media (min-width:640px){.kpi-grid{grid-template-columns:repeat(4,1fr);gap:18px;}}
+  .kpi-card{padding:18px;display:flex;flex-direction:column;gap:9px;}
+  @media (min-width:640px){.kpi-card{padding:22px;}}
+  .kpi-icon{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;}
+  .kpi-icon svg{width:21px;height:21px;}
+  .kpi-icon.i-indigo{background:rgba(108,99,255,.14);color:var(--indigo-deep);}
+  .kpi-icon.i-blue{background:rgba(61,111,224,.14);color:var(--blue-deep);}
+  .kpi-icon.i-orange{background:rgba(255,138,61,.16);color:var(--orange-deep);}
+  .kpi-icon.i-teal{background:rgba(31,182,201,.15);color:var(--teal-deep);}
+  .kpi-value{font-family:var(--font-display);font-weight:600;font-size:28px;line-height:1;letter-spacing:-.3px;font-variant-numeric:tabular-nums;}
+  @media (min-width:640px){.kpi-value{font-size:33px;}}
+  .kpi-label{font-size:13.5px;font-weight:700;color:var(--ink);}
+  .kpi-sub{font-size:11.5px;color:var(--ink-faint);line-height:1.3;}
+  .kpi-breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap;}
+  .chip-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+  .chip-green{background:rgba(34,181,115,.13);color:#1c8f5c;}
+  .chip-red{background:rgba(239,91,91,.13);color:#c8433f;}
+  .chip-blue{background:rgba(61,111,224,.13);color:#2A52B8;}
+  .chip-slate{background:rgba(92,108,143,.15);color:#5C6C8F;}
+  .chip-teal{background:rgba(31,182,201,.15);color:#128FA0;}
+
+  /* ---------- Chart card ---------- */
+  .chart-card{margin-top:20px;padding:20px;}
+  @media (min-width:640px){.chart-card{padding:26px;}}
+  .chart-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 16px;margin-bottom:16px;}
+  .chart-title{font-family:var(--font-display);font-weight:600;font-size:18px;}
+  .chart-sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--ink-soft);}
+  .legend-dot{width:10px;height:10px;border-radius:4px;}
+  .chart-wrap{position:relative;height:230px;}
+  @media (min-width:640px){.chart-wrap{height:300px;}}
+
+  /* ---------- Unibox ---------- */
+  .unibox-setup{margin-top:16px;padding:16px 18px;font-size:12.5px;color:var(--ink-soft);line-height:1.6;}
+  .unibox-setup code{background:rgba(61,111,224,.1);color:var(--blue-deep);padding:1px 6px;border-radius:6px;font-weight:700;}
+  .unibox-shell{margin-top:16px;display:flex;height:calc(100vh - 260px);min-height:440px;overflow:hidden;}
+  @media (max-width:899px){.unibox-shell{height:calc(100vh - 240px);}}
+
+  .thread-list{width:320px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid rgba(61,111,224,.12);}
+  .thread-search{padding:14px;flex-shrink:0;}
+  .thread-search input{
+    width:100%;border:none;padding:10px 14px;border-radius:14px;font-size:13px;color:var(--ink);
+    background:var(--surface);box-shadow:inset 2px 2px 5px var(--shadow-d), inset -2px -2px 5px var(--shadow-l);
+  }
+  .thread-items{flex:1;overflow-y:auto;padding:0 8px 8px;}
+  .thread-item{display:flex;flex-direction:column;gap:3px;padding:12px 10px;border-radius:14px;cursor:pointer;margin-bottom:4px;}
+  .thread-item:hover,.thread-item.active{background:rgba(61,111,224,.09);}
+  .thread-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .thread-item-name{font-weight:700;font-size:13.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .thread-item-date{font-size:10.5px;color:var(--ink-faint);flex-shrink:0;}
+  .thread-item-preview{font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .thread-item-badges{display:flex;gap:5px;margin-top:2px;}
+  .thread-empty-list{padding:30px 16px;text-align:center;font-size:12.5px;color:var(--ink-faint);}
+
+  .thread-view{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .thread-placeholder{flex:1;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:13px;text-align:center;padding:30px;}
+  .conversation{flex:1;display:flex;flex-direction:column;min-height:0;}
+  .conversation-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(61,111,224,.12);flex-shrink:0;}
+  .back-btn{display:none;border:none;background:none;font-size:22px;color:var(--blue-deep);cursor:pointer;line-height:1;padding:0 2px;}
+  .conv-name{font-weight:700;font-size:14.5px;}
+  .conv-sub{font-size:11.5px;color:var(--ink-soft);margin-top:1px;}
+  .conv-meta{margin-left:auto;flex-shrink:0;}
+  .conversation-messages{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+  .msg-bubble{max-width:78%;padding:11px 14px;border-radius:16px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+  .msg-sent{align-self:flex-end;background:linear-gradient(150deg,var(--blue),var(--blue-deep));color:#fff;border-bottom-right-radius:4px;}
+  .msg-received{align-self:flex-start;background:var(--surface-2);color:var(--ink);box-shadow:3px 3px 8px var(--shadow-d);border-bottom-left-radius:4px;}
+  .msg-meta{font-size:10.5px;opacity:.75;margin-bottom:4px;font-weight:700;}
+  .no-sync-note{align-self:center;font-size:11.5px;color:var(--ink-faint);text-align:center;max-width:85%;}
+
+  @media (max-width:899px){
+    .unibox-shell{flex-direction:column;}
+    .thread-list{width:100%;border-right:none;}
+    .thread-view{display:none;}
+    .back-btn{display:inline-block;}
+    .unibox-shell.mobile-conversation .thread-list{display:none;}
+    .unibox-shell.mobile-conversation .thread-view{display:flex;}
+  }
+  @media (min-width:900px){
+    .thread-view{display:flex;}
+    .back-btn{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Desktop sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m4 7 8 6 8-6"></path></svg>
+      </div>
+      <div class="brand-text">
+        <strong>Email Marketing</strong>
+        <span>Outreach CRM</span>
+      </div>
+    </div>
+    <nav class="nav-list">
+      <button class="nav-item active" type="button" data-view="analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="4" height="10"></rect><rect x="10" y="5" width="4" height="15"></rect><rect x="16" y="13" width="4" height="7"></rect></svg>
+        Analytics
+      </button>
+      <button class="nav-item" type="button" data-view="unibox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 3h6l2-3h4"></path><path d="M5 12 3 19a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1l-2-7"></path><path d="M5 12 7 5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1l2 7"></path></svg>
+        Unibox
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Mobile bottom nav -->
+  <nav class="bottom-nav">
+    <button class="bn-item active" type="button" data-view="analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="4" height="10"></rect><rect x="10" y="5" width="4" height="15"></rect><rect x="16" y="13" width="4" height="7"></rect></svg>
+      Analytics
+    </button>
+    <button class="bn-item" type="button" data-view="unibox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 3h6l2-3h4"></path><path d="M5 12 3 19a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1l-2-7"></path><path d="M5 12 7 5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1l2 7"></path></svg>
+      Unibox
+    </button>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+    <div class="top-bar">
+      <div class="sync-status"><span class="live-dot"></span><span id="syncedText">Syncing…</span></div>
+      <button class="refresh-btn" id="refreshBtn" type="button" aria-label="Refresh data">
+        <svg id="refreshIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path></svg>
+      </button>
+    </div>
+
+    <!-- ANALYTICS VIEW -->
+    <section class="view" id="viewAnalytics">
+      <h1>Analytics</h1>
+
+      <div class="controls-row">
+        <div class="pill-group" id="periodPills">
+          <button class="pill" data-period="today" type="button">Today</button>
+          <button class="pill active" data-period="7d" type="button">7 days</button>
+          <button class="pill" data-period="30d" type="button">30 days</button>
+          <button class="pill" data-period="90d" type="button">90 days</button>
+          <button class="pill" data-period="all" type="button">All time</button>
+        </div>
+      </div>
+
+      <div class="error-banner clay" id="errorBanner">
+        <span id="errorMessage">Something went wrong loading your sheet.</span>
+        <button class="retry-btn" id="retryBtn" type="button">Try again</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="clay kpi-card">
+          <div class="kpi-icon i-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"></path><path d="M19 8v6"></path><path d="M16 11h6"></path></svg></div>
+          <div class="kpi-value" id="kpiLeadFound">–</div>
+          <div class="kpi-label">Lead Found</div>
+          <div class="kpi-sub">Pending, not yet contacted</div>
+        </div>
+
+        <div class="clay kpi-card">
+          <div class="kpi-icon i-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m4 7 8 6 8-6"></path></svg></div>
+          <div class="kpi-value" id="kpiEmailSent">–</div>
+          <div class="kpi-label">Email Sent</div>
+          <div class="kpi-sub">Includes follow-ups &amp; finished sequences</div>
+        </div>
+
+        <div class="clay kpi-card">
+          <div class="kpi-icon i-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"></path><path d="M4 9h10a6 6 0 0 1 6 6v2"></path></svg></div>
+          <div class="kpi-value" id="kpiReplied">–</div>
+          <div class="kpi-label">Replied</div>
+          <div class="kpi-breakdown">
+            <span class="chip chip-green"><span class="chip-dot"></span>Interested <span id="kpiInterested">0</span></span>
+            <span class="chip chip-red"><span class="chip-dot"></span>Uninterested <span id="kpiUninterested">0</span></span>
+          </div>
+        </div>
+
+        <div class="clay kpi-card">
+          <div class="kpi-icon i-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg></div>
+          <div class="kpi-value" id="kpiReplyRate">–</div>
+          <div class="kpi-label">Reply Rate</div>
+          <div class="kpi-breakdown">
+            <span class="chip chip-green"><span class="chip-dot"></span><span id="kpiInterestedRate">0%</span></span>
+            <span class="chip chip-red"><span class="chip-dot"></span><span id="kpiUninterestedRate">0%</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="clay chart-card">
+        <div class="chart-head">
+          <div>
+            <div class="chart-title">Sent vs. Replies</div>
+            <div class="chart-sub">Daily volume for the selected period</div>
+          </div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Emails Sent</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--orange)"></span>Replies</span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="areaChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- UNIBOX VIEW -->
+    <section class="view" id="viewUnibox" hidden>
+      <h1>Unibox</h1>
+
+      <div class="controls-row">
+        <div class="pill-group" id="uniboxFilterPills">
+          <button class="pill active" data-filter="all" type="button">All</button>
+          <button class="pill" data-filter="Interested" type="button">Interested</button>
+          <button class="pill" data-filter="Uninterested" type="button">Uninterested</button>
+        </div>
+        <button class="gmail-connect-btn" id="gmailConnectBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m4 7 8 6 8-6"></path></svg>
+          <span id="gmailConnectLabel">Connect Gmail</span>
+        </button>
+      </div>
+
+      <div class="unibox-setup clay" id="uniboxSetupNote" hidden>
+        No conversation data found yet in your sheet. Have your automation write each thread's messages into a tab named
+        <code>Thread Messages</code> with columns: <code>Thread Id</code>, <code>Direction</code> (Sent/Received),
+        <code>From</code>, <code>To</code>, <code>Date</code>, <code>Subject</code>, <code>Body</code> — or click
+        <code>Connect Gmail</code> above to pull a conversation live instead.
+      </div>
+
+      <div class="unibox-shell clay" id="uniboxShell">
+        <div class="thread-list">
+          <div class="thread-search">
+            <input type="text" id="threadSearch" placeholder="Search name, business, or email">
+          </div>
+          <div class="thread-items" id="threadItems"></div>
+        </div>
+        <div class="thread-view">
+          <div class="thread-placeholder" id="threadPlaceholder">Select a conversation to read it here.</div>
+          <div class="conversation" id="conversation" hidden>
+            <div class="conversation-head">
+              <button class="back-btn" id="backBtn" type="button" aria-label="Back to list">‹</button>
+              <div>
+                <div class="conv-name" id="convName"></div>
+                <div class="conv-sub" id="convSub"></div>
+              </div>
+              <span class="chip conv-meta" id="convStatusBadge"></span>
+            </div>
+            <div class="conversation-messages" id="conversationMessages"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============== CONFIG ============== */
+  var API_KEY = "AIzaSyDhfdULsGy8l6D0mAIvXPCMb89a5UxxHnM";
+  var SHEET_ID = "1_SjE3zZpUMjR_gpq1nrUG7kYV3e6XZgumTthsWo6Efc";
+  var CRM_SHEET_NAME = "CRM Data";
+  var THREAD_SHEET_NAME = "Thread Messages";
+  var REFRESH_MS = 120000; // auto-refresh every 2 minutes
+
+  // To enable live Gmail fetching: create an OAuth Client ID (Web application) in Google Cloud
+  // Console with the Gmail API enabled, add this page's hosted https:// URL as an authorized
+  // JavaScript origin, and paste the client ID below.
+  var GOOGLE_OAUTH_CLIENT_ID = "PASTE_YOUR_GOOGLE_OAUTH_CLIENT_ID_HERE.apps.googleusercontent.com";
+  var GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
+
+  var COL = {
+    business: "Business Name",
+    contact: "Contact Name",
+    email: "Email",
+    subject: "Subject Line",
+    initialEmail: "Initial Email",
+    status: "Email Status",
+    date: "Date",
+    threadId: "Thread Id"
+  };
+  var TCOL = {
+    threadId: "Thread Id",
+    direction: "Direction",
+    from: "From",
+    to: "To",
+    date: "Date",
+    subject: "Subject",
+    body: "Body"
+  };
+
+  var SENT_GROUP = ["Sent1","Sent2","Sent3","Over"];
+  var PENDING_STATUS = "Pending";
+  var INTERESTED_STATUS = "Interested";
+  var UNINTERESTED_STATUS = "Uninterested";
+
+  /* ============== STATE ============== */
+  var leadRows = [];
+  var threadMessagesMap = {};
+  var threadMessagesAvailable = false;
+  var currentPeriod = "7d";
+  var currentView = "analytics";
+  var lastSynced = null;
+  var isLoading = false;
+  var chart = null;
+  var activeThreadId = null;
+  var uniboxFilter = "all";
+
+  var tokenClient = null;
+  var gmailAccessToken = null;
+  var gmailAccount = null;
+  var liveThreadCache = {};
+  var pendingThreadAfterConnect = null;
+
+  /* ============== DOM ============== */
+  var $ = function(id){ return document.getElementById(id); };
+  var periodPillsEl = $("periodPills");
+  var refreshBtn = $("refreshBtn");
+  var refreshIcon = $("refreshIcon");
+  var syncedTextEl = $("syncedText");
+  var errorBanner = $("errorBanner");
+  var errorMessageEl = $("errorMessage");
+  var retryBtn = $("retryBtn");
+  var viewAnalytics = $("viewAnalytics");
+  var viewUnibox = $("viewUnibox");
+  var threadSearch = $("threadSearch");
+  var threadItemsEl = $("threadItems");
+  var uniboxShell = $("uniboxShell");
+  var uniboxSetupNote = $("uniboxSetupNote");
+  var uniboxFilterPillsEl = $("uniboxFilterPills");
+  var threadPlaceholder = $("threadPlaceholder");
+  var conversationEl = $("conversation");
+  var conversationMessagesEl = $("conversationMessages");
+  var convNameEl = $("convName");
+  var convSubEl = $("convSub");
+  var convStatusBadgeEl = $("convStatusBadge");
+  var backBtn = $("backBtn");
+  var gmailConnectBtn = $("gmailConnectBtn");
+  var gmailConnectLabel = $("gmailConnectLabel");
+
+  /* ============== HELPERS ============== */
+  function trim(v){ return (v === undefined || v === null) ? "" : String(v).trim(); }
+
+  function findHeaderIndex(headers, name){
+    var i = headers.findIndex(function(h){ return trim(h) === name; });
+    if (i === -1){
+      var lower = name.toLowerCase();
+      i = headers.findIndex(function(h){ return trim(h).toLowerCase() === lower; });
+    }
+    return i;
+  }
+
+  function parseDate(v){
+    if (!v) return null;
+    var d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function dateKey(d){ return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate(); }
+  function startOfDay(d){ var n = new Date(d); n.setHours(0,0,0,0); return n; }
+  function addDays(d, n){ var r = new Date(d); r.setDate(r.getDate()+n); return r; }
+  function formatShortDate(d){ return d.toLocaleDateString("en-US", { month:"short", day:"numeric" }); }
+  function fmtNum(n){ return n.toLocaleString("en-US"); }
+
+  function relativeTime(d){
+    if (!d) return "";
+    var diff = Math.round((Date.now() - d.getTime())/1000);
+    if (diff < 60) return "now";
+    if (diff < 3600) return Math.round(diff/60) + "m";
+    if (diff < 86400) return Math.round(diff/3600) + "h";
+    return Math.round(diff/86400) + "d";
+  }
+
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined && text !== null) e.textContent = text;
+    return e;
+  }
+
+  function actionButton(label, onClick){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "gmail-connect-btn";
+    b.style.marginLeft = "0";
+    b.style.marginTop = "6px";
+    b.textContent = label;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function statusMeta(status){
+    if (status === PENDING_STATUS) return { label:"Pending", cls:"chip-slate" };
+    if (SENT_GROUP.indexOf(status) !== -1 && status !== "Over") return { label:status, cls:"chip-blue" };
+    if (status === "Over") return { label:"Sequence over", cls:"chip-slate" };
+    if (status === INTERESTED_STATUS) return { label:"Interested", cls:"chip-green" };
+    if (status === UNINTERESTED_STATUS) return { label:"Uninterested", cls:"chip-red" };
+    if (status === "Out of office") return { label:"Out of office", cls:"chip-teal" };
+    if (status === "Wrong Person") return { label:"Wrong person", cls:"chip-red" };
+    return { label: status || "Unknown", cls:"chip-slate" };
+  }
+
+  function getPeriodRange(period){
+    var now = new Date();
+    var start;
+    if (period === "today"){
+      start = startOfDay(now);
+    } else if (period === "7d"){
+      start = startOfDay(addDays(now, -6));
+    } else if (period === "30d"){
+      start = startOfDay(addDays(now, -29));
+    } else if (period === "90d"){
+      start = startOfDay(addDays(now, -89));
+    } else {
+      var minDate = null;
+      leadRows.forEach(function(r){ if (r.date && (!minDate || r.date < minDate)) minDate = r.date; });
+      start = minDate ? startOfDay(minDate) : startOfDay(addDays(now, -29));
+    }
+    return { start: start, end: now };
+  }
+
+  /* ============== SHEETS FETCH ============== */
+  function sheetUrl(sheetName, range){
+    var r = encodeURIComponent("'" + sheetName + "'!" + range);
+    return "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID + "/values/" + r + "?key=" + API_KEY;
+  }
+
+  function setLoading(loading){
+    isLoading = loading;
+    refreshBtn.disabled = loading;
+    if (loading) refreshIcon.classList.add("spin");
+    else refreshIcon.classList.remove("spin");
+  }
+
+  function showError(msg){ errorMessageEl.textContent = msg; errorBanner.classList.add("show"); }
+  function hideError(){ errorBanner.classList.remove("show"); }
+
+  function fetchCRM(){
+    return fetch(sheetUrl(CRM_SHEET_NAME, "A1:U100000"))
+      .then(function(res){
+        if (!res.ok){
+          return res.json().catch(function(){ return {}; }).then(function(body){
+            var apiMsg = body && body.error && body.error.message ? body.error.message : ("HTTP " + res.status);
+            throw new Error(apiMsg);
+          });
+        }
+        return res.json();
+      })
+      .then(function(data){
+        var values = data.values || [];
+        if (values.length < 2){ leadRows = []; return; }
+        var headers = values[0];
+        var idx = {};
+        Object.keys(COL).forEach(function(k){ idx[k] = findHeaderIndex(headers, COL[k]); });
+        if (idx.status === -1 || idx.date === -1){
+          throw new Error('Could not find "' + COL.status + '" or "' + COL.date + '" columns in the sheet header row.');
+        }
+        var rows = values.slice(1);
+        var parsed = [];
+        rows.forEach(function(r){
+          var status = trim(r[idx.status]);
+          var date = parseDate(r[idx.date]);
+          if (!status || !date) return;
+          parsed.push({
+            business: idx.business !== -1 ? trim(r[idx.business]) : "",
+            contact: idx.contact !== -1 ? trim(r[idx.contact]) : "",
+            email: idx.email !== -1 ? trim(r[idx.email]) : "",
+            subject: idx.subject !== -1 ? trim(r[idx.subject]) : "",
+            initialEmail: idx.initialEmail !== -1 ? trim(r[idx.initialEmail]) : "",
+            status: status,
+            date: date,
+            threadId: idx.threadId !== -1 ? trim(r[idx.threadId]) : ""
+          });
+        });
+        leadRows = parsed;
+        hideError();
+      });
+  }
+
+  function fetchThreadMessages(){
+    return fetch(sheetUrl(THREAD_SHEET_NAME, "A1:H200000"))
+      .then(function(res){
+        if (!res.ok) throw new Error("no thread tab");
+        return res.json();
+      })
+      .then(function(data){
+        var values = data.values || [];
+        var map = {};
+        if (values.length >= 2){
+          var headers = values[0];
+          var idx = {};
+          Object.keys(TCOL).forEach(function(k){ idx[k] = findHeaderIndex(headers, TCOL[k]); });
+          if (idx.threadId !== -1 && idx.date !== -1){
+            values.slice(1).forEach(function(r){
+              var tid = trim(r[idx.threadId]);
+              var date = parseDate(r[idx.date]);
+              if (!tid || !date) return;
+              if (!map[tid]) map[tid] = [];
+              map[tid].push({
+                direction: idx.direction !== -1 ? trim(r[idx.direction]) : "",
+                from: idx.from !== -1 ? trim(r[idx.from]) : "",
+                to: idx.to !== -1 ? trim(r[idx.to]) : "",
+                date: date,
+                subject: idx.subject !== -1 ? trim(r[idx.subject]) : "",
+                body: idx.body !== -1 ? trim(r[idx.body]) : ""
+              });
+            });
+          }
+        }
+        Object.keys(map).forEach(function(tid){ map[tid].sort(function(a,b){ return a.date - b.date; }); });
+        threadMessagesMap = map;
+        threadMessagesAvailable = true;
+      })
+      .catch(function(){
+        threadMessagesMap = {};
+        threadMessagesAvailable = false;
+      });
+  }
+
+  function fetchAll(){
+    if (isLoading) return;
+    setLoading(true);
+
+    Promise.allSettled([fetchCRM(), fetchThreadMessages()])
+      .then(function(results){
+        if (results[0].status === "rejected"){
+          var err = results[0].reason;
+          console.error("CRM fetch error:", err);
+          showError(err && err.message ? err.message : "Couldn't load data from Google Sheets.");
+        }
+        lastSynced = new Date();
+        renderAnalytics();
+        renderThreadList();
+        if (activeThreadId) renderConversation(activeThreadId);
+      })
+      .finally(function(){
+        setLoading(false);
+        updateSyncedText();
+      });
+  }
+
+  /* ============== ANALYTICS ============== */
+  function computeKPIs(range){
+    var leadFound = 0, emailSent = 0, interested = 0, uninterested = 0;
+    leadRows.forEach(function(r){
+      if (r.date < range.start || r.date > range.end) return;
+      if (r.status === PENDING_STATUS) leadFound++;
+      else if (SENT_GROUP.indexOf(r.status) !== -1) emailSent++;
+      else if (r.status === INTERESTED_STATUS) interested++;
+      else if (r.status === UNINTERESTED_STATUS) uninterested++;
+    });
+    var replied = interested + uninterested;
+    var replyRate = emailSent > 0 ? (replied / emailSent) * 100 : 0;
+    var interestedRate = emailSent > 0 ? (interested / emailSent) * 100 : 0;
+    var uninterestedRate = emailSent > 0 ? (uninterested / emailSent) * 100 : 0;
+    return { leadFound:leadFound, emailSent:emailSent, interested:interested, uninterested:uninterested, replied:replied, replyRate:replyRate, interestedRate:interestedRate, uninterestedRate:uninterestedRate };
+  }
+
+  function buildChartData(range){
+    var days = [];
+    var cursor = startOfDay(range.start);
+    var end = startOfDay(range.end);
+    while (cursor <= end){
+      days.push(new Date(cursor));
+      cursor = addDays(cursor, 1);
+      if (days.length > 370) break;
+    }
+    var sentMap = {}, replyMap = {};
+    days.forEach(function(d){ sentMap[dateKey(d)] = 0; replyMap[dateKey(d)] = 0; });
+
+    leadRows.forEach(function(r){
+      if (r.date < range.start || r.date > range.end) return;
+      var k = dateKey(r.date);
+      if (SENT_GROUP.indexOf(r.status) !== -1){
+        if (k in sentMap) sentMap[k]++;
+      } else if (r.status === INTERESTED_STATUS || r.status === UNINTERESTED_STATUS){
+        if (k in replyMap) replyMap[k]++;
+      }
+    });
+
+    return {
+      labels: days.map(formatShortDate),
+      sent: days.map(function(d){ return sentMap[dateKey(d)] || 0; }),
+      replies: days.map(function(d){ return replyMap[dateKey(d)] || 0; })
+    };
+  }
+
+  function renderAnalytics(){
+    var range = getPeriodRange(currentPeriod);
+    var k = computeKPIs(range);
+
+    $("kpiLeadFound").textContent = fmtNum(k.leadFound);
+    $("kpiEmailSent").textContent = fmtNum(k.emailSent);
+    $("kpiReplied").textContent = fmtNum(k.replied);
+    $("kpiReplyRate").textContent = k.emailSent > 0 ? k.replyRate.toFixed(1) + "%" : "—";
+    $("kpiInterested").textContent = fmtNum(k.interested);
+    $("kpiUninterested").textContent = fmtNum(k.uninterested);
+    $("kpiInterestedRate").textContent = "Interested " + (k.emailSent > 0 ? k.interestedRate.toFixed(1) : "0.0") + "%";
+    $("kpiUninterestedRate").textContent = "Uninterested " + (k.emailSent > 0 ? k.uninterestedRate.toFixed(1) : "0.0") + "%";
+
+    renderChart(buildChartData(range));
+  }
+
+  function renderChart(data){
+    var canvas = $("areaChart");
+    var ctx = canvas.getContext("2d");
+
+    var blueGradient = ctx.createLinearGradient(0,0,0,300);
+    blueGradient.addColorStop(0, "rgba(61,111,224,0.38)");
+    blueGradient.addColorStop(1, "rgba(61,111,224,0.02)");
+
+    var orangeGradient = ctx.createLinearGradient(0,0,0,300);
+    orangeGradient.addColorStop(0, "rgba(255,138,61,0.38)");
+    orangeGradient.addColorStop(1, "rgba(255,138,61,0.02)");
+
+    if (chart){
+      chart.data.labels = data.labels;
+      chart.data.datasets[0].data = data.sent;
+      chart.data.datasets[1].data = data.replies;
+      chart.update();
+      return;
+    }
+
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: data.labels,
+        datasets: [
+          { label:"Emails Sent", data:data.sent, borderColor:"#3D6FE0", backgroundColor:blueGradient, borderWidth:2.5, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:"#3D6FE0", pointBorderColor:"#fff", pointBorderWidth:1.5, tension:0.35, fill:true },
+          { label:"Replies", data:data.replies, borderColor:"#FF8A3D", backgroundColor:orangeGradient, borderWidth:2.5, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:"#FF8A3D", pointBorderColor:"#fff", pointBorderWidth:1.5, tension:0.35, fill:true }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode:"index", intersect:false },
+        plugins: {
+          legend: { display:false },
+          tooltip: { backgroundColor:"#152447", titleFont:{family:"'Plus Jakarta Sans', sans-serif",weight:"700",size:12.5}, bodyFont:{family:"'Plus Jakarta Sans', sans-serif",size:12.5}, padding:10, cornerRadius:10, displayColors:true, boxPadding:4 }
+        },
+        scales: {
+          x: { grid:{display:false}, ticks:{color:"#5C6C8F",font:{size:11.5},maxRotation:0,autoSkip:true,maxTicksLimit:8} },
+          y: { beginAtZero:true, ticks:{color:"#5C6C8F",font:{size:11.5},precision:0}, grid:{color:"rgba(61,111,224,0.08)"} }
+        }
+      }
+    });
+  }
+
+  /* ============== GMAIL LIVE FETCH ============== */
+  function oauthReady(){
+    return window.location.protocol !== "file:" && GOOGLE_OAUTH_CLIENT_ID.indexOf("PASTE_YOUR") === -1;
+  }
+
+  function ensureTokenClient(){
+    if (tokenClient) return true;
+    if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) return false;
+    tokenClient = window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_OAUTH_CLIENT_ID,
+      scope: GMAIL_SCOPE,
+      callback: function(resp){
+        if (!resp || resp.error){
+          console.error("Gmail auth error:", resp && resp.error);
+          updateGmailButton();
+          return;
+        }
+        gmailAccessToken = resp.access_token;
+        fetchGmailProfile().then(function(email){
+          gmailAccount = email;
+          updateGmailButton();
+          if (pendingThreadAfterConnect){
+            var tid = pendingThreadAfterConnect;
+            pendingThreadAfterConnect = null;
+            if (activeThreadId === tid) renderConversation(tid);
+          }
+        });
+      }
+    });
+    return true;
+  }
+
+  function connectGmail(forceSwitch){
+    if (!oauthReady()) return;
+    if (!ensureTokenClient()){
+      setTimeout(function(){ connectGmail(forceSwitch); }, 400);
+      return;
+    }
+    tokenClient.requestAccessToken({ prompt: forceSwitch ? "select_account" : "" });
+  }
+
+  function fetchGmailProfile(){
+    return fetch("https://gmail.googleapis.com/gmail/v1/users/me/profile", {
+      headers: { Authorization: "Bearer " + gmailAccessToken }
+    }).then(function(res){
+      if (!res.ok) throw new Error("profile fetch failed");
+      return res.json();
+    }).then(function(data){ return data.emailAddress || ""; })
+      .catch(function(){ return ""; });
+  }
+
+  function getHeader(headers, name){
+    var h = headers.filter(function(x){ return x.name && x.name.toLowerCase() === name.toLowerCase(); })[0];
+    return h ? h.value : "";
+  }
+
+  function decodeBase64Url(data){
+    if (!data) return "";
+    var b64 = data.replace(/-/g,"+").replace(/_/g,"/");
+    while (b64.length % 4) b64 += "=";
+    try {
+      var binary = atob(b64);
+      var bytes = new Uint8Array(binary.length);
+      for (var i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+      return new TextDecoder("utf-8").decode(bytes);
+    } catch(e){ return ""; }
+  }
+
+  function extractBody(payload){
+    if (!payload) return "";
+    if (payload.mimeType === "text/plain" && payload.body && payload.body.data){
+      return decodeBase64Url(payload.body.data);
+    }
+    if (payload.parts && payload.parts.length){
+      var plain = payload.parts.filter(function(p){ return p.mimeType === "text/plain"; })[0];
+      if (plain && plain.body && plain.body.data) return decodeBase64Url(plain.body.data);
+      for (var i=0;i<payload.parts.length;i++){
+        var r = extractBody(payload.parts[i]);
+        if (r) return r;
+      }
+    }
+    if (payload.mimeType === "text/html" && payload.body && payload.body.data){
+      var html = decodeBase64Url(payload.body.data);
+      var tmp = document.createElement("div");
+      tmp.innerHTML = html;
+      return (tmp.textContent || "").trim();
+    }
+    return "";
+  }
+
+  function fetchLiveThread(threadId){
+    return fetch("https://gmail.googleapis.com/gmail/v1/users/me/threads/" + encodeURIComponent(threadId) + "?format=full", {
+      headers: { Authorization: "Bearer " + gmailAccessToken }
+    }).then(function(res){
+      if (res.status === 401){
+        gmailAccessToken = null; gmailAccount = null; updateGmailButton();
+        throw new Error("Gmail session expired — reconnect and try again");
+      }
+      if (!res.ok){
+        return res.json().catch(function(){ return {}; }).then(function(body){
+          var msg = body && body.error && body.error.message ? body.error.message : ("HTTP " + res.status);
+          throw new Error(msg);
+        });
+      }
+      return res.json();
+    }).then(function(data){
+      var messages = data.messages || [];
+      var parsed = messages.map(function(m){
+        var headers = (m.payload && m.payload.headers) || [];
+        var isSent = (m.labelIds || []).indexOf("SENT") !== -1;
+        return {
+          direction: isSent ? "Sent" : "Received",
+          from: getHeader(headers, "From"),
+          to: getHeader(headers, "To"),
+          date: m.internalDate ? new Date(parseInt(m.internalDate, 10)) : new Date(),
+          subject: getHeader(headers, "Subject"),
+          body: extractBody(m.payload) || "(no readable content)"
+        };
+      });
+      parsed.sort(function(a,b){ return a.date - b.date; });
+      return parsed;
+    });
+  }
+
+  function updateGmailButton(){
+    if (window.location.protocol === "file:"){
+      gmailConnectBtn.disabled = true;
+      gmailConnectBtn.title = "Host this file over https for Gmail sign-in to work";
+      gmailConnectLabel.textContent = "Host page to enable Gmail";
+      return;
+    }
+    if (GOOGLE_OAUTH_CLIENT_ID.indexOf("PASTE_YOUR") !== -1){
+      gmailConnectBtn.disabled = true;
+      gmailConnectBtn.title = "Add your Google OAuth Client ID in the CONFIG section of this file";
+      gmailConnectLabel.textContent = "Gmail setup needed";
+      return;
+    }
+    gmailConnectBtn.disabled = false;
+    gmailConnectBtn.title = "";
+    if (gmailAccessToken && gmailAccount){
+      gmailConnectBtn.classList.add("connected");
+      gmailConnectLabel.textContent = "Connected: " + gmailAccount;
+    } else {
+      gmailConnectBtn.classList.remove("connected");
+      gmailConnectLabel.textContent = "Connect Gmail";
+    }
+  }
+
+  /* ============== UNIBOX ============== */
+  function threadEntries(){
+    return leadRows.filter(function(r){
+      if (!r.threadId) return false;
+      if (uniboxFilter !== "all" && r.status !== uniboxFilter) return false;
+      return true;
+    }).map(function(r){
+      var msgs = liveThreadCache[r.threadId] || threadMessagesMap[r.threadId] || [];
+      var last = msgs.length ? msgs[msgs.length - 1] : null;
+      return {
+        row: r,
+        msgs: msgs,
+        preview: last ? last.body : (r.initialEmail || r.subject || "No preview available"),
+        previewDate: last ? last.date : r.date
+      };
+    });
+  }
+
+  function renderThreadList(){
+    var hasAnyThreadIds = leadRows.some(function(r){ return r.threadId; });
+    uniboxSetupNote.hidden = threadMessagesAvailable || !hasAnyThreadIds;
+
+    var q = (threadSearch.value || "").toLowerCase().trim();
+    var items = threadEntries();
+    if (q){
+      items = items.filter(function(it){
+        var hay = (it.row.business + " " + it.row.contact + " " + it.row.email).toLowerCase();
+        return hay.indexOf(q) !== -1;
+      });
+    }
+    items.sort(function(a,b){
+      var ta = a.previewDate ? a.previewDate.getTime() : 0;
+      var tb = b.previewDate ? b.previewDate.getTime() : 0;
+      return tb - ta;
+    });
+
+    threadItemsEl.innerHTML = "";
+    if (!items.length){
+      threadItemsEl.appendChild(el("div","thread-empty-list", hasAnyThreadIds ? "No conversations match this filter." : "No leads with a Thread Id yet."));
+      return;
+    }
+
+    items.forEach(function(it){
+      var row = el("div", "thread-item");
+      if (it.row.threadId === activeThreadId) row.classList.add("active");
+
+      var top = el("div","thread-item-top");
+      top.appendChild(el("span","thread-item-name", it.row.business || it.row.contact || it.row.email || "Unknown lead"));
+      top.appendChild(el("span","thread-item-date", relativeTime(it.previewDate)));
+      row.appendChild(top);
+
+      row.appendChild(el("div","thread-item-preview", it.preview || ""));
+
+      var badges = el("div","thread-item-badges");
+      var meta = statusMeta(it.row.status);
+      var chip = el("span","chip " + meta.cls);
+      chip.appendChild(el("span","chip-dot"));
+      chip.appendChild(document.createTextNode(meta.label));
+      badges.appendChild(chip);
+      if (it.msgs.length){
+        badges.appendChild(el("span","chip chip-slate", it.msgs.length + " msg" + (it.msgs.length>1?"s":"")));
+      }
+      row.appendChild(badges);
+
+      row.addEventListener("click", function(){ openThread(it.row.threadId); });
+      threadItemsEl.appendChild(row);
+    });
+  }
+
+  function openThread(threadId){
+    activeThreadId = threadId;
+    uniboxShell.classList.add("mobile-conversation");
+    renderThreadList();
+    renderConversation(threadId);
+  }
+
+  function renderMessageBubbles(msgs){
+    conversationMessagesEl.innerHTML = "";
+    msgs.forEach(function(m){
+      var isSent = (m.direction || "").toLowerCase().indexOf("sent") !== -1 || (m.direction || "").toLowerCase().indexOf("out") !== -1;
+      var bubble = el("div","msg-bubble " + (isSent ? "msg-sent" : "msg-received"));
+      var metaLine = (isSent ? "You" : (m.from || "Them")) + " · " + m.date.toLocaleString("en-US", {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+      bubble.appendChild(el("div","msg-meta", metaLine));
+      bubble.appendChild(document.createTextNode(m.body || "(no content)"));
+      conversationMessagesEl.appendChild(bubble);
+    });
+    conversationMessagesEl.scrollTop = conversationMessagesEl.scrollHeight;
+  }
+
+  function renderConversation(threadId){
+    var entry = threadEntries().filter(function(it){ return it.row.threadId === threadId; })[0];
+    if (!entry){
+      threadPlaceholder.hidden = false;
+      conversationEl.hidden = true;
+      return;
+    }
+    threadPlaceholder.hidden = true;
+    conversationEl.hidden = false;
+
+    convNameEl.textContent = entry.row.business || entry.row.contact || entry.row.email || "Unknown lead";
+    convSubEl.textContent = [entry.row.contact, entry.row.email].filter(Boolean).join(" · ") || "No contact details";
+    var meta = statusMeta(entry.row.status);
+    convStatusBadgeEl.className = "chip conv-meta " + meta.cls;
+    convStatusBadgeEl.textContent = meta.label;
+
+    var msgs = liveThreadCache[threadId] || entry.msgs;
+    if (msgs.length){
+      renderMessageBubbles(msgs);
+      return;
+    }
+
+    conversationMessagesEl.innerHTML = "";
+
+    if (gmailAccessToken){
+      conversationMessagesEl.appendChild(el("div","no-sync-note","Loading conversation from Gmail…"));
+      fetchLiveThread(threadId).then(function(liveMsgs){
+        liveThreadCache[threadId] = liveMsgs;
+        if (activeThreadId === threadId) renderConversation(threadId);
+        renderThreadList();
+      }).catch(function(err){
+        if (activeThreadId !== threadId) return;
+        conversationMessagesEl.innerHTML = "";
+        conversationMessagesEl.appendChild(el("div","no-sync-note", "Couldn't load this thread from Gmail: " + err.message + ". It may belong to a different mailbox."));
+        conversationMessagesEl.appendChild(actionButton("Switch Gmail account", function(){ connectGmail(true); }));
+      });
+      return;
+    }
+
+    conversationMessagesEl.appendChild(el("div","no-sync-note","No messages synced yet for this thread."));
+    if (oauthReady()){
+      conversationMessagesEl.appendChild(actionButton("Connect Gmail to load it", function(){
+        pendingThreadAfterConnect = threadId;
+        connectGmail(false);
+      }));
+    }
+    if (entry.row.initialEmail){
+      var bubble = el("div","msg-bubble msg-sent");
+      bubble.style.marginTop = "10px";
+      bubble.appendChild(el("div","msg-meta", "Initial email (on file)"));
+      bubble.appendChild(document.createTextNode(entry.row.initialEmail));
+      conversationMessagesEl.appendChild(bubble);
+    }
+  }
+
+  function closeConversation(){
+    uniboxShell.classList.remove("mobile-conversation");
+  }
+
+  /* ============== SYNCED TIME ============== */
+  function updateSyncedText(){
+    if (!lastSynced){ syncedTextEl.textContent = "Syncing…"; return; }
+    var diff = Math.round((Date.now() - lastSynced.getTime()) / 1000);
+    var txt;
+    if (diff < 5) txt = "Synced just now";
+    else if (diff < 60) txt = "Synced " + diff + "s ago";
+    else txt = "Synced " + Math.round(diff/60) + "m ago";
+    syncedTextEl.textContent = txt;
+  }
+
+  /* ============== VIEW SWITCHING ============== */
+  function switchView(view){
+    currentView = view;
+    viewAnalytics.hidden = view !== "analytics";
+    viewUnibox.hidden = view !== "unibox";
+    Array.prototype.forEach.call(document.querySelectorAll("[data-view]"), function(elx){
+      elx.classList.toggle("active", elx.getAttribute("data-view") === view);
+    });
+  }
+
+  /* ============== EVENTS ============== */
+  periodPillsEl.addEventListener("click", function(e){
+    var btn = e.target.closest(".pill");
+    if (!btn) return;
+    var period = btn.getAttribute("data-period");
+    if (period === currentPeriod) return;
+    currentPeriod = period;
+    Array.prototype.forEach.call(periodPillsEl.querySelectorAll(".pill"), function(p){
+      p.classList.toggle("active", p === btn);
+    });
+    renderAnalytics();
+  });
+
+  uniboxFilterPillsEl.addEventListener("click", function(e){
+    var btn = e.target.closest(".pill");
+    if (!btn) return;
+    var f = btn.getAttribute("data-filter");
+    if (f === uniboxFilter) return;
+    uniboxFilter = f;
+    Array.prototype.forEach.call(uniboxFilterPillsEl.querySelectorAll(".pill"), function(p){
+      p.classList.toggle("active", p === btn);
+    });
+    renderThreadList();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-view]"), function(btn){
+    btn.addEventListener("click", function(){ switchView(btn.getAttribute("data-view")); });
+  });
+
+  threadSearch.addEventListener("input", renderThreadList);
+  backBtn.addEventListener("click", closeConversation);
+  refreshBtn.addEventListener("click", fetchAll);
+  retryBtn.addEventListener("click", fetchAll);
+  gmailConnectBtn.addEventListener("click", function(){
+    if (gmailConnectBtn.disabled) return;
+    connectGmail(!!gmailAccessToken);
+  });
+
+  /* ============== INIT ============== */
+  updateGmailButton();
+  fetchAll();
+  setInterval(fetchAll, REFRESH_MS);
+  setInterval(updateSyncedText, 5000);
+
+})();
+</script>
+</body>
+</html>
