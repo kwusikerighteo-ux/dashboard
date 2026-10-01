@@ -132,16 +132,20 @@
     box-shadow:inset 3px 3px 7px rgba(0,0,0,.22), inset -2px -2px 5px rgba(255,255,255,.18);
   }
 
-  .gmail-connect-btn{
-    display:flex;align-items:center;gap:8px;border:none;cursor:pointer;
-    font-weight:700;font-size:12.5px;padding:9px 16px;border-radius:999px;
-    color:var(--blue-deep);margin-left:auto;flex-shrink:0;white-space:nowrap;
+  .gmail-accounts{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap;}
+  .gmail-chip{
+    display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:#1c8f5c;
+    background:rgba(34,181,115,.13);padding:6px 6px 6px 12px;border-radius:999px;white-space:nowrap;
+  }
+  .gmail-chip button{border:none;background:rgba(255,255,255,.6);cursor:pointer;color:inherit;font-size:13px;line-height:1;
+    width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;}
+  .gmail-add-btn{
+    display:flex;align-items:center;gap:7px;border:none;cursor:pointer;font-weight:700;font-size:12.5px;
+    padding:9px 16px;border-radius:999px;color:var(--blue-deep);white-space:nowrap;
     background:linear-gradient(150deg,var(--surface-2),var(--surface));
     box-shadow:5px 5px 10px var(--shadow-d), -5px -5px 10px var(--shadow-l);
   }
-  .gmail-connect-btn svg{width:16px;height:16px;flex-shrink:0;}
-  .gmail-connect-btn.connected{color:#1c8f5c;}
-  .gmail-connect-btn[disabled]{opacity:.55;cursor:not-allowed;}
+  .gmail-add-btn[disabled]{opacity:.55;cursor:not-allowed;}
 
   .error-banner{
     display:none;align-items:center;justify-content:space-between;gap:12px;
@@ -195,13 +199,17 @@
   .unibox-shell{margin-top:16px;display:flex;height:calc(100vh - 260px);min-height:440px;overflow:hidden;}
   @media (max-width:899px){.unibox-shell{height:calc(100vh - 240px);}}
 
-  .thread-list{width:320px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid rgba(61,111,224,.12);}
+  .thread-list{width:320px;flex-shrink:0;min-height:0;display:flex;flex-direction:column;border-right:1px solid rgba(61,111,224,.12);}
   .thread-search{padding:14px;flex-shrink:0;}
   .thread-search input{
     width:100%;border:none;padding:10px 14px;border-radius:14px;font-size:13px;color:var(--ink);
     background:var(--surface);box-shadow:inset 2px 2px 5px var(--shadow-d), inset -2px -2px 5px var(--shadow-l);
   }
-  .thread-items{flex:1;overflow-y:auto;padding:0 8px 8px;}
+  .thread-items{flex:1;min-height:0;overflow-y:auto;padding:0 8px 8px;
+    scrollbar-width:thin;scrollbar-color:rgba(61,111,224,.35) transparent;}
+  .thread-items::-webkit-scrollbar{width:6px;}
+  .thread-items::-webkit-scrollbar-thumb{background:rgba(61,111,224,.35);border-radius:10px;}
+  .thread-items::-webkit-scrollbar-track{background:transparent;}
   .thread-item{display:flex;flex-direction:column;gap:3px;padding:12px 10px;border-radius:14px;cursor:pointer;margin-bottom:4px;}
   .thread-item:hover,.thread-item.active{background:rgba(61,111,224,.09);}
   .thread-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -211,20 +219,26 @@
   .thread-item-badges{display:flex;gap:5px;margin-top:2px;}
   .thread-empty-list{padding:30px 16px;text-align:center;font-size:12.5px;color:var(--ink-faint);}
 
-  .thread-view{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .thread-view{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;}
   .thread-placeholder{flex:1;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:13px;text-align:center;padding:30px;}
-  .conversation{flex:1;display:flex;flex-direction:column;min-height:0;}
+  .thread-placeholder[hidden]{display:none;}
+  .conversation{flex:1;min-height:0;display:flex;flex-direction:column;}
+  .conversation[hidden]{display:none;}
   .conversation-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(61,111,224,.12);flex-shrink:0;}
   .back-btn{display:none;border:none;background:none;font-size:22px;color:var(--blue-deep);cursor:pointer;line-height:1;padding:0 2px;}
   .conv-name{font-weight:700;font-size:14.5px;}
   .conv-sub{font-size:11.5px;color:var(--ink-soft);margin-top:1px;}
   .conv-meta{margin-left:auto;flex-shrink:0;}
-  .conversation-messages{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
-  .msg-bubble{max-width:78%;padding:11px 14px;border-radius:16px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+  .conversation-messages{flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;
+    scrollbar-width:thin;scrollbar-color:rgba(61,111,224,.35) transparent;}
+  .conversation-messages::-webkit-scrollbar{width:6px;}
+  .conversation-messages::-webkit-scrollbar-thumb{background:rgba(61,111,224,.35);border-radius:10px;}
+  .conversation-messages::-webkit-scrollbar-track{background:transparent;}
+  .msg-bubble{max-width:78%;padding:11px 14px;border-radius:16px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;flex-shrink:0;}
   .msg-sent{align-self:flex-end;background:linear-gradient(150deg,var(--blue),var(--blue-deep));color:#fff;border-bottom-right-radius:4px;}
   .msg-received{align-self:flex-start;background:var(--surface-2);color:var(--ink);box-shadow:3px 3px 8px var(--shadow-d);border-bottom-left-radius:4px;}
   .msg-meta{font-size:10.5px;opacity:.75;margin-bottom:4px;font-weight:700;}
-  .no-sync-note{align-self:center;font-size:11.5px;color:var(--ink-faint);text-align:center;max-width:85%;}
+  .no-sync-note{align-self:center;font-size:11.5px;color:var(--ink-faint);text-align:center;max-width:85%;flex-shrink:0;}
 
   @media (max-width:899px){
     .unibox-shell{flex-direction:column;}
@@ -367,10 +381,7 @@
           <button class="pill" data-filter="Interested" type="button">Interested</button>
           <button class="pill" data-filter="Uninterested" type="button">Uninterested</button>
         </div>
-        <button class="gmail-connect-btn" id="gmailConnectBtn" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m4 7 8 6 8-6"></path></svg>
-          <span id="gmailConnectLabel">Connect Gmail</span>
-        </button>
+        <div class="gmail-accounts" id="gmailAccountsBar"></div>
       </div>
 
       <div class="unibox-setup clay" id="uniboxSetupNote" hidden>
@@ -417,9 +428,6 @@
   var THREAD_SHEET_NAME = "Thread Messages";
   var REFRESH_MS = 120000; // auto-refresh every 2 minutes
 
-  // To enable live Gmail fetching: create an OAuth Client ID (Web application) in Google Cloud
-  // Console with the Gmail API enabled, add this page's hosted https:// URL as an authorized
-  // JavaScript origin, and paste the client ID below.
   var GOOGLE_OAUTH_CLIENT_ID = "204294744448-5u1ec2enpjrcj9kt6ut9mvc4ejj0vkp0.apps.googleusercontent.com";
   var GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
 
@@ -461,9 +469,9 @@
   var uniboxFilter = "all";
 
   var tokenClient = null;
-  var gmailAccessToken = null;
-  var gmailAccount = null;
-  var liveThreadCache = {};
+  var gmailAccounts = {};       // email -> { token: string }
+  var threadAccountHint = {};   // threadId -> email that served it last time
+  var liveThreadCache = {};     // threadId -> parsed messages
   var pendingThreadAfterConnect = null;
 
   /* ============== DOM ============== */
@@ -489,8 +497,7 @@
   var convSubEl = $("convSub");
   var convStatusBadgeEl = $("convStatusBadge");
   var backBtn = $("backBtn");
-  var gmailConnectBtn = $("gmailConnectBtn");
-  var gmailConnectLabel = $("gmailConnectLabel");
+  var gmailAccountsBarEl = $("gmailAccountsBar");
 
   /* ============== HELPERS ============== */
   function trim(v){ return (v === undefined || v === null) ? "" : String(v).trim(); }
@@ -535,7 +542,7 @@
   function actionButton(label, onClick){
     var b = document.createElement("button");
     b.type = "button";
-    b.className = "gmail-connect-btn";
+    b.className = "gmail-add-btn";
     b.style.marginLeft = "0";
     b.style.marginTop = "6px";
     b.textContent = label;
@@ -802,7 +809,7 @@
     });
   }
 
-  /* ============== GMAIL LIVE FETCH ============== */
+  /* ============== GMAIL (MULTI-ACCOUNT LIVE FETCH) ============== */
   function oauthReady(){
     return window.location.protocol !== "file:" && GOOGLE_OAUTH_CLIENT_ID.indexOf("PASTE_YOUR") === -1;
   }
@@ -816,13 +823,12 @@
       callback: function(resp){
         if (!resp || resp.error){
           console.error("Gmail auth error:", resp && resp.error);
-          updateGmailButton();
           return;
         }
-        gmailAccessToken = resp.access_token;
-        fetchGmailProfile().then(function(email){
-          gmailAccount = email;
-          updateGmailButton();
+        var token = resp.access_token;
+        fetchGmailProfile(token).then(function(email){
+          if (email) gmailAccounts[email] = { token: token };
+          renderGmailAccounts();
           if (pendingThreadAfterConnect){
             var tid = pendingThreadAfterConnect;
             pendingThreadAfterConnect = null;
@@ -834,18 +840,18 @@
     return true;
   }
 
-  function connectGmail(forceSwitch){
+  function connectGmail(){
     if (!oauthReady()) return;
     if (!ensureTokenClient()){
-      setTimeout(function(){ connectGmail(forceSwitch); }, 400);
+      setTimeout(connectGmail, 400);
       return;
     }
-    tokenClient.requestAccessToken({ prompt: forceSwitch ? "select_account" : "" });
+    tokenClient.requestAccessToken({ prompt: "select_account" });
   }
 
-  function fetchGmailProfile(){
+  function fetchGmailProfile(token){
     return fetch("https://gmail.googleapis.com/gmail/v1/users/me/profile", {
-      headers: { Authorization: "Bearer " + gmailAccessToken }
+      headers: { Authorization: "Bearer " + token }
     }).then(function(res){
       if (!res.ok) throw new Error("profile fetch failed");
       return res.json();
@@ -892,13 +898,14 @@
     return "";
   }
 
-  function fetchLiveThread(threadId){
+  function fetchLiveThread(threadId, token){
     return fetch("https://gmail.googleapis.com/gmail/v1/users/me/threads/" + encodeURIComponent(threadId) + "?format=full", {
-      headers: { Authorization: "Bearer " + gmailAccessToken }
+      headers: { Authorization: "Bearer " + token }
     }).then(function(res){
       if (res.status === 401){
-        gmailAccessToken = null; gmailAccount = null; updateGmailButton();
-        throw new Error("Gmail session expired — reconnect and try again");
+        var e = new Error("Session expired for this mailbox");
+        e.expired = true;
+        throw e;
       }
       if (!res.ok){
         return res.json().catch(function(){ return {}; }).then(function(body){
@@ -926,28 +933,53 @@
     });
   }
 
-  function updateGmailButton(){
-    if (window.location.protocol === "file:"){
-      gmailConnectBtn.disabled = true;
-      gmailConnectBtn.title = "Host this file over https for Gmail sign-in to work";
-      gmailConnectLabel.textContent = "Host page to enable Gmail";
-      return;
+  function fetchLiveThreadAnyAccount(threadId){
+    var emails = Object.keys(gmailAccounts);
+    if (!emails.length) return Promise.reject(new Error("No Gmail accounts connected"));
+    var hinted = threadAccountHint[threadId];
+    if (hinted && gmailAccounts[hinted]){
+      emails = [hinted].concat(emails.filter(function(e){ return e !== hinted; }));
     }
-    if (GOOGLE_OAUTH_CLIENT_ID.indexOf("PASTE_YOUR") !== -1){
-      gmailConnectBtn.disabled = true;
-      gmailConnectBtn.title = "Add your Google OAuth Client ID in the CONFIG section of this file";
-      gmailConnectLabel.textContent = "Gmail setup needed";
-      return;
+    var i = 0;
+    function tryNext(lastErr){
+      if (i >= emails.length) return Promise.reject(lastErr || new Error("Thread not found in any connected mailbox"));
+      var email = emails[i++];
+      var acct = gmailAccounts[email];
+      if (!acct) return tryNext(lastErr);
+      return fetchLiveThread(threadId, acct.token)
+        .then(function(msgs){ threadAccountHint[threadId] = email; return { msgs: msgs, account: email }; })
+        .catch(function(err){
+          if (err && err.expired){ delete gmailAccounts[email]; renderGmailAccounts(); }
+          return tryNext(err instanceof Error ? err : new Error("fetch failed"));
+        });
     }
-    gmailConnectBtn.disabled = false;
-    gmailConnectBtn.title = "";
-    if (gmailAccessToken && gmailAccount){
-      gmailConnectBtn.classList.add("connected");
-      gmailConnectLabel.textContent = "Connected: " + gmailAccount;
-    } else {
-      gmailConnectBtn.classList.remove("connected");
-      gmailConnectLabel.textContent = "Connect Gmail";
+    return tryNext();
+  }
+
+  function renderGmailAccounts(){
+    gmailAccountsBarEl.innerHTML = "";
+    Object.keys(gmailAccounts).forEach(function(email){
+      var chip = el("span","gmail-chip");
+      chip.appendChild(document.createTextNode(email));
+      var x = document.createElement("button");
+      x.type = "button"; x.textContent = "\u00d7"; x.title = "Disconnect " + email;
+      x.addEventListener("click", function(){ delete gmailAccounts[email]; renderGmailAccounts(); renderThreadList(); });
+      chip.appendChild(x);
+      gmailAccountsBarEl.appendChild(chip);
+    });
+    var addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "gmail-add-btn";
+    addBtn.textContent = Object.keys(gmailAccounts).length ? "+ Add another" : "Connect Gmail";
+    if (!oauthReady()){
+      addBtn.disabled = true;
+      addBtn.title = window.location.protocol === "file:"
+        ? "Host this file over https for Gmail sign-in to work"
+        : "Add your Google OAuth Client ID in the CONFIG section of this file";
     }
+    addBtn.addEventListener("click", function(){ connectGmail(); });
+    gmailAccountsBarEl.appendChild(addBtn);
+    renderThreadList();
   }
 
   /* ============== UNIBOX ============== */
@@ -970,7 +1002,7 @@
 
   function renderThreadList(){
     var hasAnyThreadIds = leadRows.some(function(r){ return r.threadId; });
-    uniboxSetupNote.hidden = threadMessagesAvailable || !hasAnyThreadIds;
+    uniboxSetupNote.hidden = threadMessagesAvailable || Object.keys(gmailAccounts).length > 0 || !hasAnyThreadIds;
 
     var q = (threadSearch.value || "").toLowerCase().trim();
     var items = threadEntries();
@@ -1031,7 +1063,7 @@
     msgs.forEach(function(m){
       var isSent = (m.direction || "").toLowerCase().indexOf("sent") !== -1 || (m.direction || "").toLowerCase().indexOf("out") !== -1;
       var bubble = el("div","msg-bubble " + (isSent ? "msg-sent" : "msg-received"));
-      var metaLine = (isSent ? "You" : (m.from || "Them")) + " · " + m.date.toLocaleString("en-US", {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+      var metaLine = (isSent ? "You" : (m.from || "Them")) + " \u00b7 " + m.date.toLocaleString("en-US", {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
       bubble.appendChild(el("div","msg-meta", metaLine));
       bubble.appendChild(document.createTextNode(m.body || "(no content)"));
       conversationMessagesEl.appendChild(bubble);
@@ -1050,7 +1082,7 @@
     conversationEl.hidden = false;
 
     convNameEl.textContent = entry.row.business || entry.row.contact || entry.row.email || "Unknown lead";
-    convSubEl.textContent = [entry.row.contact, entry.row.email].filter(Boolean).join(" · ") || "No contact details";
+    convSubEl.textContent = [entry.row.contact, entry.row.email].filter(Boolean).join(" \u00b7 ") || "No contact details";
     var meta = statusMeta(entry.row.status);
     convStatusBadgeEl.className = "chip conv-meta " + meta.cls;
     convStatusBadgeEl.textContent = meta.label;
@@ -1062,18 +1094,23 @@
     }
 
     conversationMessagesEl.innerHTML = "";
+    var connectedCount = Object.keys(gmailAccounts).length;
 
-    if (gmailAccessToken){
-      conversationMessagesEl.appendChild(el("div","no-sync-note","Loading conversation from Gmail…"));
-      fetchLiveThread(threadId).then(function(liveMsgs){
-        liveThreadCache[threadId] = liveMsgs;
+    if (connectedCount){
+      conversationMessagesEl.appendChild(el("div","no-sync-note","Loading conversation from Gmail\u2026"));
+      fetchLiveThreadAnyAccount(threadId).then(function(result){
+        liveThreadCache[threadId] = result.msgs;
         if (activeThreadId === threadId) renderConversation(threadId);
         renderThreadList();
       }).catch(function(err){
         if (activeThreadId !== threadId) return;
         conversationMessagesEl.innerHTML = "";
-        conversationMessagesEl.appendChild(el("div","no-sync-note", "Couldn't load this thread from Gmail: " + err.message + ". It may belong to a different mailbox."));
-        conversationMessagesEl.appendChild(actionButton("Switch Gmail account", function(){ connectGmail(true); }));
+        conversationMessagesEl.appendChild(el("div","no-sync-note",
+          "Couldn't find this thread in any of your " + connectedCount + " connected mailbox" + (connectedCount>1?"es":"") + ". It may belong to a mailbox you haven't connected yet."));
+        conversationMessagesEl.appendChild(actionButton("Connect another mailbox", function(){
+          pendingThreadAfterConnect = threadId;
+          connectGmail();
+        }));
       });
       return;
     }
@@ -1082,7 +1119,7 @@
     if (oauthReady()){
       conversationMessagesEl.appendChild(actionButton("Connect Gmail to load it", function(){
         pendingThreadAfterConnect = threadId;
-        connectGmail(false);
+        connectGmail();
       }));
     }
     if (entry.row.initialEmail){
@@ -1152,13 +1189,9 @@
   backBtn.addEventListener("click", closeConversation);
   refreshBtn.addEventListener("click", fetchAll);
   retryBtn.addEventListener("click", fetchAll);
-  gmailConnectBtn.addEventListener("click", function(){
-    if (gmailConnectBtn.disabled) return;
-    connectGmail(!!gmailAccessToken);
-  });
 
   /* ============== INIT ============== */
-  updateGmailButton();
+  renderGmailAccounts();
   fetchAll();
   setInterval(fetchAll, REFRESH_MS);
   setInterval(updateSyncedText, 5000);
